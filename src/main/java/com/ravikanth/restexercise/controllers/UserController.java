@@ -5,8 +5,8 @@ import com.ravikanth.restexercise.exceptions.UserNotFoundException;
 import com.ravikanth.restexercise.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -27,12 +27,14 @@ public class UserController {
     }
 
     @GetMapping(path = "/users/{id}")
-    public User findUserById(@PathVariable int id)
+    public EntityModel<User> findUserById(@PathVariable int id)
     {
         User user = userRepository.findUser(id);
         if(user == null) throw new UserNotFoundException(id);
         EntityModel<User> userEntityModel = EntityModel.of(user);
-        return user;
+        WebMvcLinkBuilder usersLink = WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).listAllUsers());
+        userEntityModel.add(usersLink.withRel("LinkToUsers"));
+        return userEntityModel;
     }
 
     @PostMapping(path = "/users")
